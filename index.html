@@ -1,0 +1,368 @@
+
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FF POINT MASTER</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+:root{--bg:#090d16;--panel:#151d2c;--line:#33425b;--gold:#ffbd45;--txt:#f5f7fb;--muted:#aab5c8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:Arial,sans-serif}
+header{padding:22px 15px;text-align:center;background:linear-gradient(130deg,#18243a,#101521);border-bottom:2px solid var(--gold)}
+h1{margin:0;color:var(--gold);letter-spacing:1px}
+header p{color:var(--muted);margin:7px 0 0;font-size:13px}
+main{max-width:1000px;margin:auto;padding:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px;margin:0 0 14px}
+h2{font-size:17px;color:var(--gold);margin:0 0 12px}
+.hint{font-size:12px;color:var(--muted);line-height:1.5}
+input,select,button,textarea{font:inherit;border-radius:8px;padding:11px;border:1px solid var(--line)}
+input,select,textarea{background:#0b1220;color:white;width:100%;margin:4px 0 8px}
+button{background:var(--gold);color:#151515;font-weight:700;border:0;cursor:pointer;margin:4px 2px}
+button.alt{background:#35445e;color:white}
+button.red{background:#a93643;color:white}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.tablewrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:580px}
+th,td{padding:10px 7px;border-bottom:1px solid var(--line);text-align:center;font-size:13px}
+th{color:var(--gold);background:#202c40}
+input.cell{min-width:65px;width:75px;text-align:center;padding:7px;margin:0}
+#preview{max-width:100%;max-height:260px;display:none;border-radius:10px;margin:8px 0}
+.status{color:var(--gold);font-size:13px;min-height:20px}
+.rank{color:var(--gold);font-weight:bold}
+footer{text-align:center;color:var(--muted);padding:20px;font-size:12px}
+@media(max-width:520px){.grid{grid-template-columns:1fr}h1{font-size:22px}}
+</style>
+</head>
+<body>
+<header>
+<h1>🏆 FF POINT MASTER</h1>
+<p>SCREENSHOT TO AUTOMATIC POINT TABLE</p>
+</header>
+
+<main>
+<section class="card">
+<h2>১. টিম রেজিস্ট্রেশন</h2>
+<div class="grid">
+<input id="team" placeholder="টিমের নাম">
+<input id="roster" placeholder="প্লেয়ার নাম (কমা দিয়ে)">
+</div>
+<button onclick="addTeam()">+ টিম যোগ</button>
+<div id="teams" class="hint"></div>
+</section>
+
+<section class="card">
+<h2>২. পয়েন্ট সেটিংস</h2>
+<div class="grid">
+<label class="hint">প্রতি কিল পয়েন্ট<input id="kp" type="number" value="1" min="0"></label>
+<label class="hint">১ম স্থান<input id="p1" type="number" value="12"></label>
+<label class="hint">২য় স্থান<input id="p2" type="number" value="9"></label>
+<label class="hint">৩য় স্থান<input id="p3" type="number" value="8"></label>
+<label class="hint">৪র্থ স্থান<input id="p4" type="number" value="7"></label>
+<label class="hint">৫ম স্থান<input id="p5" type="number" value="6"></label>
+<label class="hint">৬ষ্ঠ স্থান<input id="p6" type="number" value="5"></label>
+<label class="hint">৭ম স্থান<input id="p7" type="number" value="4"></label>
+<label class="hint">৮ম স্থান<input id="p8" type="number" value="3"></label>
+<label class="hint">৯ম স্থান<input id="p9" type="number" value="2"></label>
+<label class="hint">১০ম স্থান<input id="p10" type="number" value="1"></label>
+</div>
+<p class="hint">টুর্নামেন্টের নিয়ম অনুযায়ী পয়েন্ট পরিবর্তন করতে পারবে।</p>
+</section>
+
+<section class="card">
+<h2>৩. ম্যাচ রেজাল্টের স্ক্রিনশট আপলোড</h2>
+<input id="shot" type="file" accept="image/*">
+<img id="preview" alt="আপলোড করা রেজাল্ট">
+<button id="scan" onclick="scanImage()">স্ক্রিনশট পড়ুন ও পয়েন্ট তৈরি করুন</button>
+<div id="status" class="status"></div>
+<textarea id="raw" rows="5" placeholder="OCR থেকে পড়া লেখা এখানে দেখা যাবে।"></textarea>
+<p class="hint">OCR সব স্ক্রিনশটের তথ্য নির্ভুলভাবে চিনতে নাও পারে। তাই নিচের স্কোর যাচাই করে সেভ করবে।</p>
+</section>
+
+<section class="card">
+<h2>৪. শনাক্ত করা স্কোর — যাচাই করো</h2>
+<label class="hint">এই ম্যাচ নম্বর
+<input id="match" type="number" min="1" value="1">
+</label>
+<div class="tablewrap">
+<table>
+<thead><tr><th>টিম</th><th>প্লেয়ার</th><th>কিল</th><th>স্থান</th><th>পয়েন্ট</th></tr></thead>
+<tbody id="detected">
+<tr><td colspan="5">প্রথমে স্ক্রিনশট আপলোড করো</td></tr>
+</tbody>
+</table>
+</div>
+<button onclick="saveMatch()">যাচাই শেষে ম্যাচ সেভ</button>
+<button class="alt" onclick="addManual()">+ ম্যানুয়ালি সারি যোগ</button>
+</section>
+
+<section class="card">
+<h2>৫. OVERALL POINT TABLE</h2>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Rank</th><th>Team</th><th>Match</th><th>Kills</th><th>Placement</th><th>Total</th></tr></thead>
+<tbody id="standings"></tbody>
+</table>
+</div>
+<button class="alt" onclick="window.print()">PDF / Print</button>
+<button class="alt" onclick="backup()">ডেটা ব্যাকআপ</button>
+<button class="red" onclick="resetAll()">সব ডেটা মুছুন</button>
+</section>
+</main>
+
+<footer>FF POINT MASTER • Data stays in this browser on this device</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+
+let teams=JSON.parse(localStorage.getItem('ffpm_teams')||'[]');
+let matches=JSON.parse(localStorage.getItem('ffpm_matches')||'[]');
+let rows=[];
+
+function persist(){
+localStorage.setItem('ffpm_teams',JSON.stringify(teams));
+localStorage.setItem('ffpm_matches',JSON.stringify(matches));
+}
+
+function esc(s){
+return String(s).replace(/[&<>"']/g,c=>({
+'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+}[c]));
+}
+
+function addTeam(){
+let n=$('team').value.trim();
+let r=$('roster').value.trim();
+
+if(!n)return alert('টিমের নাম লিখো');
+if(teams.some(t=>t.name.toLowerCase()===n.toLowerCase()))
+return alert('এই টিম আগে যোগ করা হয়েছে');
+
+teams.push({
+name:n,
+players:r.split(',').map(x=>x.trim()).filter(Boolean)
+});
+
+$('team').value='';
+$('roster').value='';
+persist();
+render();
+}
+
+function render(){
+$('teams').innerHTML=teams.length?
+teams.map((t,i)=>`${i+1}. ${esc(t.name)} — ${esc(t.players.join(', '))}
+<button class="red" onclick="delTeam(${i})">মুছুন</button>`).join('<br>'):
+'এখনো কোনো টিম যোগ করা হয়নি';
+
+renderStandings();
+}
+
+function delTeam(i){
+if(!confirm('টিমটি মুছবে?'))return;
+teams.splice(i,1);
+persist();
+render();
+}
+
+function placePts(pos){
+let n=Number(pos);
+return n>=1&&n<=10?Number($('p'+n).value||0):0;
+}
+
+function scoreRow(i){
+let r=rows[i];
+let k=Math.max(0,Number(r.kills)||0);
+let p=placePts(r.position);
+return k*Number($('kp').value||0)+p;
+}
+
+function drawRows(){
+let tb=$('detected');
+
+if(!rows.length){
+tb.innerHTML='<tr><td colspan="5">স্ক্রিনশট থেকে তথ্য পড়া যায়নি। নিচে ম্যানুয়ালি সারি যোগ করো।</td></tr>';
+return;
+}
+
+tb.innerHTML=rows.map((r,i)=>`
+<tr>
+<td>
+<select onchange="rows[${i}].team=this.value">
+${teams.map(t=>`<option ${t.name===r.team?'selected':''}>${esc(t.name)}</option>`).join('')}
+</select>
+</td>
+<td><input class="cell" value="${esc(r.player)}" onchange="rows[${i}].player=this.value"></td>
+<td><input class="cell" type="number" min="0" value="${r.kills}" onchange="rows[${i}].kills=this.value;drawRows()"></td>
+<td><input class="cell" type="number" min="1" value="${r.position}" onchange="rows[${i}].position=this.value;drawRows()"></td>
+<td>${scoreRow(i)}</td>
+</tr>`).join('');
+}
+
+function addManual(){
+rows.push({
+team:teams[0]?.name||'',
+player:'',
+kills:0,
+position:1
+});
+drawRows();
+}
+
+function parseText(text){
+let lines=text.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+let found=[];
+
+for(let t of teams){
+for(let pl of t.players){
+let line=lines.find(x=>x.toLowerCase().includes(pl.toLowerCase()));
+if(line){
+let nums=(line.match(/\d+/g)||[]).map(Number);
+found.push({
+team:t.name,
+player:pl,
+kills:nums.length?nums[nums.length-1]:0,
+position:1
+});
+}
+}
+}
+
+rows=found;
+if(!rows.length)addManual();
+drawRows();
+}
+
+async function scanImage(){
+let f=$('shot').files[0];
+
+if(!f)return alert('আগে স্ক্রিনশট নির্বাচন করো');
+if(!teams.length)return alert('আগে টিম ও প্লেয়ার যোগ করো');
+
+$('status').textContent='ছবি পড়া হচ্ছে... একটু অপেক্ষা করো';
+$('scan').disabled=true;
+
+try{
+let result=await Tesseract.recognize(f,'eng+ben',{
+logger:m=>{
+if(m.status){
+$('status').textContent=m.status+' '+Math.round((m.progress||0)*100)+'%';
+}
+}
+});
+
+$('raw').value=result.data.text;
+parseText(result.data.text);
+$('status').textContent='পড়া শেষ। নিচের টেবিল যাচাই করে সংশোধন করো।';
+
+}catch(e){
+$('status').textContent='OCR চালু হয়নি। ইন্টারনেট সংযোগ দিয়ে আবার চেষ্টা করো।';
+}
+
+$('scan').disabled=false;
+}
+
+$('shot').addEventListener('change',e=>{
+let f=e.target.files[0];
+if(f){
+$('preview').src=URL.createObjectURL(f);
+$('preview').style.display='block';
+}
+});
+
+function saveMatch(){
+if(!rows.length)return alert('কোনো স্কোর নেই');
+
+let m=Number($('match').value)||1;
+
+rows.forEach(r=>{
+if(!r.team)return;
+
+matches.push({
+match:m,
+team:r.team,
+player:r.player,
+kills:Math.max(0,Number(r.kills)||0),
+position:Math.max(1,Number(r.position)||1),
+placement:placePts(r.position)
+});
+});
+
+persist();
+renderStandings();
+alert('ম্যাচের স্কোর সেভ হয়েছে');
+}
+
+function renderStandings(){
+let data={};
+
+teams.forEach(t=>{
+data[t.name]={
+name:t.name,
+matches:new Set(),
+kills:0,
+placement:0,
+total:0
+};
+});
+
+matches.forEach(x=>{
+if(!data[x.team]){
+data[x.team]={
+name:x.team,
+matches:new Set(),
+kills:0,
+placement:0,
+total:0
+};
+}
+
+let d=data[x.team];
+d.matches.add(x.match);
+d.kills+=x.kills;
+d.placement+=x.placement;
+d.total+=x.kills*Number($('kp').value||0)+x.placement;
+});
+
+let arr=Object.values(data).sort((a,b)=>
+b.total-a.total||b.kills-a.kills
+);
+
+$('standings').innerHTML=arr.map((d,i)=>`
+<tr>
+<td class="rank">${i+1}</td>
+<td>${esc(d.name)}</td>
+<td>${d.matches.size}</td>
+<td>${d.kills}</td>
+<td>${d.placement}</td>
+<td class="rank">${d.total}</td>
+</tr>`).join('')||
+'<tr><td colspan="6">এখনো কোনো স্কোর নেই</td></tr>';
+}
+
+function backup(){
+let blob=new Blob(
+[JSON.stringify({teams,matches},null,2)],
+{type:'application/json'}
+);
+
+let a=document.createElement('a');
+a.href=URL.createObjectURL(blob);
+a.download='ff-point-master-backup.json';
+a.click();
+URL.revokeObjectURL(a.href);
+}
+
+function resetAll(){
+if(!confirm('সব টিম ও ম্যাচের ডেটা মুছে ফেলবে?'))return;
+teams=[];
+matches=[];
+persist();
+render();
+}
+
+render();
+</script>
+</body>
+</html>
