@@ -1,221 +1,593 @@
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FF POINT MASTER</title>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
+:root{--bg:#080d18;--panel:#121e32;--line:#33445f;--gold:#ffc629;--muted:#b9c6d9}
 *{box-sizing:border-box}
-body{margin:0;background:#080d18;color:white;font-family:Arial,sans-serif}
-header{text-align:center;padding:18px;background:#101b30}
-h1{margin:0;color:#ffcc35}
-main{max-width:1000px;margin:auto;padding:14px}
-.panel{background:#131f34;padding:15px;border-radius:12px;margin-bottom:15px}
-input,button{padding:11px;border-radius:7px;border:0;margin:4px;max-width:100%}
-input{background:#fff;color:#111}
-button{background:#ffbd24;color:#111;font-weight:bold;cursor:pointer}
-.secondary{background:#263b5c;color:white}
-table{width:100%;border-collapse:collapse;min-width:650px}
-th,td{padding:10px;text-align:center;border:1px solid #42516a}
-th{background:#263c5e;color:#ffcf46}
-tr:nth-child(even){background:#1b2a43}
+body{margin:0;background:var(--bg);color:#fff;font-family:Arial,sans-serif}
+header{padding:20px 12px;text-align:center;background:linear-gradient(120deg,#111d32,#243b60);border-bottom:2px solid var(--gold)}
+h1{margin:0;color:var(--gold);letter-spacing:1px}
+header p{margin:7px 0 0;color:#d7e1f0}
+main{max-width:1100px;margin:auto;padding:14px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:15px;margin:0 0 14px}
+h2{font-size:18px;margin:0 0 12px;color:var(--gold)}
+input,select,button{font:inherit;border-radius:8px;padding:11px;margin:4px 2px;border:1px solid #52637e;max-width:100%}
+input,select{background:#fff;color:#101827}
+button{background:var(--gold);border:0;color:#161616;font-weight:bold;cursor:pointer}
+button.alt{background:#314766;color:#fff}
+button.danger{background:#8d3030;color:white}
+.row{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.row>*{flex:1 1 180px}
+.hint{font-size:13px;line-height:1.5;color:var(--muted)}
+.teamgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
+.teamcard{background:#1b2b45;border:1px solid #3a4c69;padding:10px;border-radius:9px}
+.teamcard input{width:100%;margin:3px 0}
 .tablewrap{overflow-x:auto}
-#poster{padding:15px;background:#101a2b;background-size:cover;background-position:center}
-#poster h2{text-align:center;color:#ffcf46}
-#poster h3{text-align:center}
-.small{font-size:12px;color:#c6d1e2}
+table{border-collapse:collapse;width:100%;min-width:680px}
+th,td{border:1px solid #40516c;padding:9px 7px;text-align:center}
+th{background:#263d60;color:var(--gold)}
+tbody tr:nth-child(even){background:#1a2a43}
+#poster{padding:14px;background:#111c30;background-size:cover;background-position:center}
+#poster h2,#poster h3{text-align:center}
+#poster h2{font-size:23px}
+#poster h3{color:white}
+.status{padding:10px;border-radius:8px;background:#0c1525;color:#dbe8fa;white-space:pre-wrap}
+.bad{color:#ff9c9c}
+.good{color:#8df0b0}
+input[type=file]{background:#e9edf4;color:#111}
+@media(max-width:600px){main{padding:8px}.panel{padding:11px}h1{font-size:23px}}
 </style>
 </head>
 <body>
+
 <header>
 <h1>FF POINT MASTER</h1>
-<p>FREE FIRE TOURNAMENT POINT TABLE</p>
+<p>FREE FIRE • AUTOMATIC POINT TABLE</p>
 </header>
 
 <main>
+
 <section class="panel">
-<h3>টুর্নামেন্ট সেটিংস</h3>
-<input id="org" placeholder="Organization Name" value="LALPUR ORGANIZATION">
-<input id="event" placeholder="Tournament Name" value="FREE FIRE TOURNAMENT">
-<input id="day" placeholder="Match / Day" value="DAY 1">
-<br>
-<label>Background Image:</label>
-<input type="file" id="bg" accept="image/*">
-<button onclick="updatePoster()">আপডেট</button>
+<h2>১. টুর্নামেন্ট সেটিংস</h2>
+<div class="row">
+<input id="org" value="LALPUR ORGANIZATION" placeholder="Organization Name">
+<input id="event" value="FREE FIRE TOURNAMENT" placeholder="Tournament Name">
+<input id="day" value="DAY 1" placeholder="Match / Day">
+</div>
+<div class="row">
+<label>পোস্টারের Background
+<input id="bgFile" type="file" accept="image/*">
+</label>
+<label>প্রতি Kill Point
+<input id="kp" type="number" min="0" value="1">
+</label>
+</div>
+<button onclick="applySettings()">সেটিংস প্রয়োগ</button>
 </section>
 
 <section class="panel">
-<h3>টিম তৈরি</h3>
-<input id="teamName" placeholder="Team Name">
-<input id="players" placeholder="৪ জনের নাম, কমা দিয়ে লিখুন">
-<button onclick="addTeam()">টিম যোগ করুন</button>
-<p class="small">সর্বোচ্চ ১২টি টিম যোগ করা যাবে।</p>
-<div id="teamList"></div>
+<h2>২. ১২টি টিমের নাম ও একজন পরিচিত প্লেয়ার</h2>
+<p class="hint">
+প্রতি টিমের শুধু একজন প্লেয়ারের নাম লিখবে।
+স্ক্রিনশটে ওই নাম খুঁজে তার একই টিম ব্লকের চারজনের Kill পড়ার চেষ্টা করবে।
+</p>
+<div id="teamInputs" class="teamgrid"></div>
+<button onclick="saveTeams()">১২টি টিম সেভ করুন</button>
+<div id="teamStatus" class="hint"></div>
 </section>
 
 <section class="panel">
-<h3>ম্যাচ পয়েন্ট যোগ</h3>
-<label>টিম:</label>
-<select id="matchTeam"></select>
-<input id="kills" type="number" min="0" placeholder="Total Kills">
-<input id="place" type="number" min="1" max="12" placeholder="Match Position">
-<button onclick="saveScore()">পয়েন্ট যোগ করুন</button>
-<p class="small">প্রতি ম্যাচের টিমের মোট Kill ও Position লিখুন।</p>
+<h2>৩. ম্যাচের দুটি Result Screenshot আপলোড</h2>
+<div class="row">
+<label>Screenshot 1
+<input id="img1" type="file" accept="image/*">
+</label>
+<label>Screenshot 2
+<input id="img2" type="file" accept="image/*">
+</label>
+</div>
+<button id="scanBtn" onclick="scanScreens()">AI/OCR দিয়ে ফলাফল পড়ুন</button>
+<div id="scanStatus" class="status">
+দুটি স্ক্রিনশট নির্বাচন করে বাটনে চাপ দাও।
+</div>
+<p class="hint">
+স্ক্রিনশটের লেখা অস্পষ্ট বা ঢাকা থাকলে OCR ভুল করতে পারে।
+সেভ করার আগে পাওয়া Kill ও Position যাচাই করবে।
+</p>
 </section>
 
-<section class="panel">
-<h3>পয়েন্ট সেটিংস</h3>
-<input id="killValue" type="number" value="1" min="0" placeholder="প্রতি Kill Point">
-<button onclick="render()">হিসাব আপডেট</button>
-<p class="small">Placement: 1st=12, 2nd=9, 3rd=8, 4th=7, 5th=6, 6th=5, 7th=4, 8th=3, 9th=2, 10th=1, 11th ও 12th=0।</p>
-</section>
-
-<section class="panel">
-<h3>স্ক্রিনশট OCR</h3>
-<input type="file" id="shot" accept="image/*">
-<button onclick="readOCR()">স্ক্রিনশট পড়ুন</button>
-<p id="ocrStatus">স্ক্রিনশট দিলে OCR চেষ্টা করবে। পাওয়া তথ্য যাচাই করে হাতে এন্ট্রি দিতে হবে।</p>
-<textarea id="ocrText" rows="7" style="width:100%;display:none"></textarea>
-</section>
-
-<section class="panel">
-<div id="poster">
-<h2 id="posterOrg">LALPUR ORGANIZATION</h2>
-<h3 id="posterEvent">FREE FIRE TOURNAMENT</h3>
-<p id="posterDay" style="text-align:center">DAY 1</p>
+<section class="panel" id="reviewPanel" style="display:none">
+<h2>৪. OCR ফলাফল যাচাই</h2>
 <div class="tablewrap">
-<table id="scoreTable">
-<thead><tr>
-<th>POS</th><th>TEAM NAME</th><th>CO</th><th>MP</th><th>PP</th><th>FP</th><th>TP</th>
-</tr></thead>
+<table>
+<thead>
+<tr>
+<th>টিম</th>
+<th>নাম পাওয়া গেছে?</th>
+<th>৪ জনের Kill</th>
+<th>মোট Kill</th>
+<th>Position</th>
+<th>অবস্থা</th>
+</tr>
+</thead>
+<tbody id="reviewBody"></tbody>
+</table>
+</div>
+<button onclick="saveMatch()">যাচাই করা ফলাফল সেভ করুন</button>
+</section>
+
+<section class="panel">
+<h2>৫. পয়েন্ট টেবিল</h2>
+<div id="poster">
+<h2 id="pOrg">LALPUR ORGANIZATION</h2>
+<h3 id="pEvent">FREE FIRE TOURNAMENT</h3>
+<p id="pDay" style="text-align:center">DAY 1</p>
+<div class="tablewrap">
+<table>
+<thead>
+<tr>
+<th>POS</th>
+<th>TEAM NAME</th>
+<th>CO</th>
+<th>MP</th>
+<th>PP</th>
+<th>FP</th>
+<th>TP</th>
+</tr>
+</thead>
 <tbody id="scoreBody"></tbody>
 </table>
 </div>
 </div>
 <button onclick="downloadPoster()">PNG ডাউনলোড</button>
-<button class="secondary" onclick="resetScores()">সব ম্যাচের পয়েন্ট মুছুন</button>
+<button class="alt" onclick="exportBackup()">ডেটা Backup</button>
+<label class="alt" style="display:inline-block;padding:10px;border-radius:8px;margin:4px">
+Backup Restore
+<input type="file" accept="application/json" onchange="importBackup(event)" style="max-width:170px">
+</label>
+<button class="danger" onclick="clearMatches()">সব ম্যাচের পয়েন্ট মুছুন</button>
 </section>
+
 </main>
 
 <script>
-let teams=[];
-let placement=[12,9,8,7,6,5,4,3,2,1,0,0];
+const $=id=>document.getElementById(id);
+const PLACEMENT=[12,9,8,7,6,5,4,3,2,1,0,0];
 
-function addTeam(){
- const name=document.getElementById('teamName').value.trim();
- const players=document.getElementById('players').value.split(',').map(x=>x.trim()).filter(Boolean);
- if(!name)return alert('টিমের নাম লিখুন');
- if(teams.length>=12)return alert('সর্বোচ্চ ১২টি টিম');
- if(teams.some(t=>t.name.toLowerCase()===name.toLowerCase()))return alert('এই টিম আগে যোগ করা হয়েছে');
- if(players.length!==4)return alert('৪ জন প্লেয়ারের নাম কমা দিয়ে লিখুন');
- teams.push({name,players,mp:0,pp:0,fp:0,co:0});
- document.getElementById('teamName').value='';
- document.getElementById('players').value='';
- render();
+let teams=JSON.parse(localStorage.getItem('ffpm_teams')||'[]');
+let pending=[];
+
+function norm(s){
+return (s||'').toUpperCase()
+.normalize('NFD')
+.replace(/[\u0300-\u036f]/g,'')
+.replace(/[^A-Z0-9]/g,'');
 }
 
-function saveScore(){
- const index=Number(document.getElementById('matchTeam').value);
- const k=Math.max(0,Number(document.getElementById('kills').value)||0);
- const p=Number(document.getElementById('place').value);
- if(!teams[index])return alert('আগে টিম যোগ করুন');
- if(!Number.isInteger(p)||p<1||p>12)return alert('Position ১ থেকে ১২ দিন');
- teams[index].mp++;
- teams[index].fp+=k;
- teams[index].pp+=placement[p-1];
- if(p===1)teams[index].co++;
- render();
- document.getElementById('kills').value='';
- document.getElementById('place').value='';
+function distance(a,b){
+a=norm(a);b=norm(b);
+if(!a||!b)return 999;
+let d=Array.from({length:b.length+1},(_,i)=>i);
+for(let i=1;i<=a.length;i++){
+let prev=d[0];d[0]=i;
+for(let j=1;j<=b.length;j++){
+let old=d[j];
+d[j]=Math.min(d[j]+1,d[j-1]+1,prev+(a[i-1]===b[j-1]?0:1));
+prev=old;
+}}
+return d[b.length];
 }
 
-function calculateRanking(){
- return [...teams].sort((a,b)=>{
- const at=a.pp+a.fp,bt=b.pp+b.fp;
- return bt-at || b.fp-a.fp || b.pp-a.pp || a.name.localeCompare(b.name);
- });
+function similarity(a,b){
+let x=norm(a),y=norm(b);
+if(!x||!y)return 0;
+if(x===y||y.includes(x)||x.includes(y))return 1;
+return 1-distance(x,y)/Math.max(x.length,y.length);
+}
+
+function esc(s){
+return String(s||'').replace(/[&<>"']/g,c=>({
+'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+}[c]));
+}
+
+function renderTeamInputs(){
+const box=$('teamInputs');
+box.innerHTML='';
+for(let i=0;i<12;i++){
+let t=teams[i]||{name:'',anchor:''};
+let div=document.createElement('div');
+div.className='teamcard';
+div.innerHTML=`
+<b>TEAM ${i+1}</b>
+<input id="tn${i}" placeholder="Team Name" value="${esc(t.name)}">
+<input id="ta${i}" placeholder="একজন প্লেয়ারের নাম" value="${esc(t.anchor)}">
+`;
+box.appendChild(div);
+}
+}
+
+function saveTeams(){
+let arr=[];
+for(let i=0;i<12;i++){
+let name=$('tn'+i).value.trim();
+let anchor=$('ta'+i).value.trim();
+
+if(name||anchor){
+if(!name||!anchor){
+alert('TEAM '+(i+1)+' এর টিম নাম ও প্লেয়ারের নাম দুটোই দাও');
+return;
+}
+arr.push({name,anchor,mp:0,pp:0,fp:0,co:0});
+}
+}
+if(arr.length!==12){
+alert('সব ১২টি টিমের নাম ও একজন করে প্লেয়ারের নাম দিতে হবে');
+return;
+}
+arr=arr.map(t=>{
+let old=teams.find(x=>x.name.toLowerCase()===t.name.toLowerCase());
+return old?{...t,mp:old.mp||0,pp:old.pp||0,fp:old.fp||0,co:old.co||0}:t;
+});
+teams=arr;
+persist();
+$('teamStatus').textContent='১২টি টিম সেভ হয়েছে।';
+render();
+}
+
+function persist(){
+localStorage.setItem('ffpm_teams',JSON.stringify(teams));
+}
+
+function applySettings(){
+$('pOrg').textContent=$('org').value||'ORGANIZATION';
+$('pEvent').textContent=$('event').value||'TOURNAMENT';
+$('pDay').textContent=$('day').value||'DAY 1';
+}
+
+$('bgFile').addEventListener('change',e=>{
+let f=e.target.files[0];
+if(!f)return;
+let url=URL.createObjectURL(f);
+$('poster').style.backgroundImage=
+`linear-gradient(#101a2baa,#101a2baa),url("${url}")`;
+});
+
+function clusterLines(words){
+let ws=words.filter(w=>w.text&&w.confidence>15)
+.map(w=>({
+text:w.text.trim(),
+x:(w.bbox.x0+w.bbox.x1)/2,
+y:(w.bbox.y0+w.bbox.y1)/2,
+x0:w.bbox.x0,
+x1:w.bbox.x1,
+conf:w.confidence
+}));
+ws.sort((a,b)=>a.y-b.y||a.x-b.x);
+let lines=[];
+for(const w of ws){
+let line=lines.find(l=>Math.abs(l.y-w.y)<13);
+if(!line){line={y:w.y,words:[]};lines.push(line)}
+line.words.push(w);
+line.y=line.words.reduce((s,z)=>s+z.y,0)/line.words.length;
+}
+for(const l of lines){
+l.words.sort((a,b)=>a.x-b.x);
+l.text=l.words.map(w=>w.text).join(' ');
+}
+return lines.sort((a,b)=>a.y-b.y);
+}
+
+function killsInLine(line){
+let a=line.words,out=[];
+for(let i=0;i<a.length;i++){
+if(/eliminations?/i.test(a[i].text)){
+let found=null;
+for(let j=i-1;j>=Math.max(0,i-3);j--){
+let m=a[j].text.match(/^\D*(\d{1,2})\D*$/);
+if(m){found=Number(m[1]);break}
+}
+if(found!==null)out.push(found);
+}}
+return out;
+}
+
+function lineMatch(anchor,line){
+return Math.max(
+...line.words.map(w=>similarity(anchor,w.text)),
+similarity(anchor,line.text)
+);
+}
+
+function findRank(lines,anchorLine){
+const x=anchorLine.words.reduce((s,w)=>s+w.x,0)/anchorLine.words.length;
+const left=x<815;
+let candidates=[];
+for(const l of lines){
+if(Math.abs(l.y-anchorLine.y)>55)continue;
+for(const w of l.words){
+if(left?(w.x<300):(w.x>815&&w.x<940)){
+let m=w.text.match(/^(1[0-2]|[1-9])$/);
+if(m)candidates.push({
+rank:Number(m[1]),
+score:Math.abs(l.y-anchorLine.y)+Math.abs(w.x-(left?235:865))*.03
+});
+}
+}
+}
+candidates.sort((a,b)=>a.score-b.score);
+return candidates[0]?.rank||0;
+}
+
+function analyzeLines(lines,team){
+let best={score:0,line:null};
+for(const l of lines){
+let score=lineMatch(team.anchor,l);
+if(score>best.score)best={score,line:l};
+}
+if(!best.line||best.score<.55){
+return {found:false,kills:[],position:0,confidence:best.score,reason:'নাম পাওয়া যায়নি'};
+}
+const anchorLine=best.line;
+
+const paired=lines.filter(l=>
+l!==anchorLine&&
+Math.abs(l.y-anchorLine.y)>=17&&
+Math.abs(l.y-anchorLine.y)<=47&&
+Math.abs((l.words[0]?.x||0)-(anchorLine.words[0]?.x||0))<150
+).sort((a,b)=>
+Math.abs(a.y-anchorLine.y)-Math.abs(b.y-anchorLine.y)
+)[0];
+
+let all=[
+...killsInLine(anchorLine),
+...(paired?killsInLine(paired):[])
+];
+
+let pos=findRank(lines,anchorLine);
+
+return {
+found:true,
+kills:all.slice(0,4),
+position:pos,
+confidence:best.score,
+reason:all.length===4&&pos?
+'৪টি Kill ও Position পাওয়া গেছে':
+'তথ্য আংশিক—যাচাই প্রয়োজন'
+};
+}
+
+async function scanScreens(){
+if(teams.length!==12){
+alert('আগে ১২টি টিম ও প্রত্যেকের একজন প্লেয়ারের নাম সেভ করো');
+return;
+}
+
+let files=[$('img1').files[0],$('img2').files[0]].filter(Boolean);
+if(files.length!==2){
+alert('দুটি Screenshot আপলোড করো');
+return;
+}
+
+$('scanBtn').disabled=true;
+$('scanStatus').textContent='OCR চলছে... অপেক্ষা করো।';
+
+try{
+let allLines=[];
+for(let i=0;i<files.length;i++){
+$('scanStatus').textContent=`Screenshot ${i+1}/2 পড়া হচ্ছে...`;
+
+const result=await Tesseract.recognize(
+files[i],
+'eng',
+{
+logger:m=>{
+if(m.status==='recognizing text'){
+$('scanStatus').textContent=
+`Screenshot ${i+1}/2: ${Math.round((m.progress||0)*100)}%`;
+}
+}
+}
+);
+allLines.push(...clusterLines(result.data.words||[]));
+}
+
+pending=teams.map(t=>{
+let best={
+found:false,kills:[],position:0,
+confidence:0,reason:'নাম পাওয়া যায়নি'
+};
+let r=analyzeLines(allLines,t);
+if(r.confidence>best.confidence)best=r;
+return {
+...t,
+...best,
+killInputs:best.kills.length?best.kills:[0,0,0,0]
+};
+});
+
+showReview();
+$('scanStatus').textContent=
+'OCR শেষ। নিচে পাওয়া তথ্য যাচাই করো।';
+}catch(e){
+$('scanStatus').textContent=
+'OCR চালানো যায়নি: '+e.message+
+'. ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করো।';
+}
+finally{
+$('scanBtn').disabled=false;
+}
+}
+
+function showReview(){
+$('reviewPanel').style.display='block';
+$('reviewBody').innerHTML='';
+
+pending.forEach((r,i)=>{
+let tr=document.createElement('tr');
+
+let kills=[0,1,2,3].map(j=>
+`<input type="number" min="0"
+value="${Number(r.killInputs[j]||0)}"
+id="k${i}_${j}" style="width:55px;padding:6px">`
+).join('');
+
+let pos=Array.from({length:12},(_,j)=>
+`<option value="${j+1}" ${r.position===j+1?'selected':''}>${j+1}</option>`
+).join('');
+
+tr.innerHTML=`
+<td>${esc(r.name)}</td>
+<td>${r.found?'পাওয়া গেছে':'<span class="bad">পাওয়া যায়নি</span>'}</td>
+<td>${kills}</td>
+<td id="sum${i}">${r.killInputs.reduce((a,b)=>a+Number(b||0),0)}</td>
+<td><select id="pos${i}" style="width:70px">${pos}</select></td>
+<td class="${r.kills.length===4&&r.position?'good':'bad'}">${esc(r.reason)}</td>
+`;
+$('reviewBody').appendChild(tr);
+
+for(let j=0;j<4;j++){
+$('k'+i+'_'+j).addEventListener('input',()=>{
+$('sum'+i).textContent=[0,1,2,3].reduce(
+(s,k)=>s+Number($('k'+i+'_'+k).value||0),0
+);
+});
+}
+});
+}
+
+function saveMatch(){
+if(!pending.length)return;
+
+for(let i=0;i<pending.length;i++){
+let t=teams.find(x=>x.name===pending[i].name);
+if(!t)continue;
+
+let kills=[0,1,2,3].reduce(
+(s,j)=>s+Math.max(0,Number($('k'+i+'_'+j).value)||0),0
+);
+
+let pos=Number($('pos'+i).value);
+if(!pos){
+alert('প্রতিটি টিমের Position ঠিক করো');
+return;
+}
+
+const killPoint=Math.max(0,Number($('kp').value)||0);
+t.mp++;
+t.fp+=kills*killPoint;
+t.pp+=PLACEMENT[pos-1];
+if(pos===1)t.co++;
+}
+
+persist();
+render();
+$('reviewPanel').style.display='none';
+$('scanStatus').textContent='ম্যাচ সেভ হয়েছে।';
 }
 
 function render(){
- const ranked=calculateRanking();
- document.getElementById('scoreBody').innerHTML='';
- ranked.forEach((t,i)=>{
- const tr=document.createElement('tr');
- const pp=i>=10?0:t.pp;
- [i+1,t.name,t.co,t.mp,pp,t.fp,pp+t.fp].forEach(v=>{
- const td=document.createElement('td');
- td.textContent=v;
- tr.appendChild(td);
- });
- document.getElementById('scoreBody').appendChild(tr);
- });
- document.getElementById('teamList').textContent=
- teams.map(t=>t.name+' — '+t.players.join(', ')).join(' | ');
- const select=document.getElementById('matchTeam');
- const old=select.value;
- select.innerHTML='';
- teams.forEach((t,i)=>{
- const op=document.createElement('option');
- op.value=i;op.textContent=t.name;select.appendChild(op);
- });
- if(old<select.options.length)select.value=old;
-}
+const body=$('scoreBody');
+body.innerHTML='';
 
-function updatePoster(){
- const org=document.getElementById('org').value;
- const event=document.getElementById('event').value;
- const day=document.getElementById('day').value;
- document.getElementById('posterOrg').textContent=org;
- document.getElementById('posterEvent').textContent=event;
- document.getElementById('posterDay').textContent=day;
-}
+const ranked=[...teams].sort((a,b)=>
+(b.pp+b.fp)-(a.pp+a.fp)||
+b.fp-a.fp||
+b.pp-a.pp
+);
 
-document.getElementById('bg').addEventListener('change',e=>{
- const file=e.target.files[0];
- if(!file)return;
- const url=URL.createObjectURL(file);
- document.getElementById('poster').style.backgroundImage=`linear-gradient(#101a2baa,#101a2baa),url("${url}")`;
+ranked.forEach((t,i)=>{
+let pp=t.pp||0;
+let tr=document.createElement('tr');
+
+[i+1,t.name,t.co||0,t.mp||0,pp,t.fp||0,pp+(t.fp||0)]
+.forEach(v=>{
+let td=document.createElement('td');
+td.textContent=v;
+tr.appendChild(td);
 });
 
-async function readOCR(){
- const file=document.getElementById('shot').files[0];
- if(!file)return alert('আগে স্ক্রিনশট নির্বাচন করুন');
- const status=document.getElementById('ocrStatus');
- status.textContent='ছবি পড়া হচ্ছে... অপেক্ষা করুন';
- try{
- const result=await Tesseract.recognize(file,'eng');
- document.getElementById('ocrText').style.display='block';
- document.getElementById('ocrText').value=result.data.text;
- status.textContent='OCR শেষ। পাওয়া লেখা যাচাই করুন। OCR নিজে থেকে নির্ভুল Kill বা Team mapping নিশ্চিত করতে পারে না।';
- }catch(e){
- status.textContent='ছবি পড়া যায়নি। আবার চেষ্টা করুন।';
- }
+body.appendChild(tr);
+});
 }
 
-function resetScores(){
- if(!confirm('সব ম্যাচের পয়েন্ট মুছবেন?'))return;
- teams.forEach(t=>{t.mp=0;t.pp=0;t.fp=0;t.co=0});
- render();
+function clearMatches(){
+if(!confirm('সব ম্যাচের পয়েন্ট মুছে ফেলবে?'))return;
+teams=teams.map(t=>({...t,mp:0,pp:0,fp:0,co:0}));
+persist();
+render();
+}
+
+function exportBackup(){
+let blob=new Blob([
+JSON.stringify({
+teams,
+settings:{
+org:$('org').value,
+event:$('event').value,
+day:$('day').value,
+kp:$('kp').value
+}
+},null,2)
+],{type:'application/json'});
+
+let a=document.createElement('a');
+a.href=URL.createObjectURL(blob);
+a.download='ff-point-master-backup.json';
+a.click();
+URL.revokeObjectURL(a.href);
+}
+
+function importBackup(e){
+let f=e.target.files[0];
+if(!f)return;
+
+let r=new FileReader();
+r.onload=()=>{
+try{
+let d=JSON.parse(r.result);
+if(!Array.isArray(d.teams))throw Error();
+teams=d.teams;
+persist();
+renderTeamInputs();
+render();
+
+if(d.settings){
+$('org').value=d.settings.org||'';
+$('event').value=d.settings.event||'';
+$('day').value=d.settings.day||'';
+$('kp').value=d.settings.kp||1;
+applySettings();
+}
+alert('Backup Restore হয়েছে');
+}catch{
+alert('ভুল Backup ফাইল');
+}
+};
+r.readAsText(f);
 }
 
 function downloadPoster(){
- const poster=document.getElementById('poster');
- if(!window.html2canvas){
- const s=document.createElement('script');
- s.src='https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
- s.onload=downloadPoster;
- document.head.appendChild(s);
- return;
- }
- html2canvas(poster,{scale:2,useCORS:true}).then(canvas=>{
- const a=document.createElement('a');
- a.download='FF-POINT-MASTER.png';
- a.href=canvas.toDataURL('image/png');
- a.click();
- });
+let s=document.createElement('script');
+s.src='https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+s.onload=()=>{
+html2canvas($('poster'),{scale:2,useCORS:true}).then(c=>{
+let a=document.createElement('a');
+a.download='FF-POINT-TABLE.png';
+a.href=c.toDataURL('image/png');
+a.click();
+});
+};
+document.head.appendChild(s);
 }
+
+renderTeamInputs();
+applySettings();
 render();
 </script>
 </body>
