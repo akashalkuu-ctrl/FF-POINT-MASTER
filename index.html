@@ -8,74 +8,55 @@
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#090e19;color:white;font-family:Arial,sans-serif}
-header{text-align:center;padding:20px;background:#17243a;border-bottom:3px solid #ffbd45}
-header h1{color:#ffbd45;margin:0}
-main{max-width:1000px;margin:auto;padding:14px}
+body{margin:0;background:#080e19;color:white;font-family:Arial}
+header{text-align:center;padding:20px;background:#172b43;border-bottom:3px solid #ffbd45}
+h1{color:#ffbd45;margin:0}
+main{max-width:950px;margin:auto;padding:13px}
 .card{background:#172131;border:1px solid #35445c;border-radius:12px;padding:15px;margin-bottom:15px}
-h2{color:#ffbd45;font-size:17px;margin-top:0}
-input,select,button{padding:11px;border-radius:7px;font-size:14px}
+h2{font-size:17px;color:#ffbd45;margin-top:0}
+input,button,select{padding:11px;border-radius:7px;font-size:14px}
 input,select{width:100%;background:#0b1220;color:white;border:1px solid #43516a;margin:5px 0 9px}
 button{background:#ffbd45;border:0;font-weight:bold;margin:4px;cursor:pointer}
 .blue{background:#354a68;color:white}
 .red{background:#a93643;color:white}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.small{font-size:12px;color:#aab6ca;line-height:1.5}
-.tablewrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:550px}
-th,td{padding:9px;text-align:center;border-bottom:1px solid #35445c}
-th{color:#ffbd45}
-.cell{width:70px!important;text-align:center}
-#poster{width:100%;max-width:700px;display:block;margin:15px auto;border-radius:8px}
+.small{font-size:12px;color:#b4bfd0;line-height:1.5}
 .status{color:#ffbd45;font-size:13px}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:560px}
+td,th{padding:8px;text-align:center;border-bottom:1px solid #40506a;font-size:13px}
+th{color:#ffbd45}
+td input{width:65px;text-align:center}
+canvas{width:100%;height:auto;background:#ddd}
 @media(max-width:500px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-
 <header>
 <h1>🏆 FF POINT MASTER</h1>
-<p>TOURNAMENT MANAGEMENT & POSTER MAKER</p>
+<p>AUTOMATIC TOURNAMENT POINT TABLE</p>
 </header>
-
 <main>
 
 <section class="card">
-<h2>১. Organization ও Poster Design</h2>
-
-<label class="small">Organization Name</label>
-<input id="org" value="YOUR ESPORTS ORGANIZATION">
-
-<label class="small">Tournament Name</label>
-<input id="tournament" value="FREE FIRE TOURNAMENT">
-
-<label class="small">Day / Match</label>
-<input id="day" value="DAY 01">
-
-<label class="small">Poster-এর Background ছবি</label>
-<input id="background" type="file" accept="image/*">
-
+<h2>১. Organization ও Poster</h2>
+<input id="org" value="YOUR ESPORTS ORGANIZATION" placeholder="Organization Name">
+<input id="event" value="FREE FIRE TOURNAMENT" placeholder="Tournament Name">
+<input id="day" value="DAY 01" placeholder="Day / Match">
+<label class="small">Background Image</label>
+<input type="file" id="bg" accept="image/*">
 <div class="grid">
-<label class="small">Table Color
-<input id="tableColor" type="color" value="#167c35"></label>
-
-<label class="small">Text Color
-<input id="textColor" type="color" value="#ffffff"></label>
-
-<label class="small">Row Color
-<input id="rowColor" type="color" value="#fff4c7"></label>
-
-<label class="small">Title Color
-<input id="titleColor" type="color" value="#ffe28a"></label>
+<label class="small">Table Color<input type="color" id="tc" value="#167c35"></label>
+<label class="small">Row Color<input type="color" id="rc" value="#fff4c7"></label>
+<label class="small">Text Color<input type="color" id="fc" value="#183c27"></label>
+<label class="small">Title Color<input type="color" id="hc" value="#ffe28a"></label>
 </div>
-
-<button onclick="makePoster()">পোস্টার আপডেট</button>
 </section>
 
 <section class="card">
-<h2>২. টিম রেজিস্ট্রেশন</h2>
-<input id="teamName" placeholder="Team Name">
-<input id="players" placeholder="চারজন প্লেয়ারের নাম কমা দিয়ে">
+<h2>২. Team Registration</h2>
+<input id="tn" placeholder="Team Name">
+<input id="pn" placeholder="Player 1, Player 2, Player 3, Player 4">
 <button onclick="addTeam()">+ Add Team</button>
 <div id="teamList" class="small"></div>
 </section>
@@ -83,83 +64,48 @@ th{color:#ffbd45}
 <section class="card">
 <h2>৩. Point Settings</h2>
 <div class="grid">
-<label class="small">প্রতি Kill Point
-<input id="kp" type="number" value="1"></label>
-<label class="small">১ম স্থান
-<input id="p1" type="number" value="12"></label>
-<label class="small">২য় স্থান
-<input id="p2" type="number" value="9"></label>
-<label class="small">৩য় স্থান
-<input id="p3" type="number" value="8"></label>
-<label class="small">৪র্থ স্থান
-<input id="p4" type="number" value="7"></label>
-<label class="small">৫ম স্থান
-<input id="p5" type="number" value="6"></label>
-<label class="small">৬ষ্ঠ স্থান
-<input id="p6" type="number" value="5"></label>
-<label class="small">৭ম স্থান
-<input id="p7" type="number" value="4"></label>
-<label class="small">৮ম স্থান
-<input id="p8" type="number" value="3"></label>
-<label class="small">৯ম স্থান
-<input id="p9" type="number" value="2"></label>
-<label class="small">১০ম স্থান
-<input id="p10" type="number" value="1"></label>
+<label class="small">প্রতি Kill Point<input id="killPoint" type="number" value="1"></label>
+<label class="small">১ম স্থান<input id="p1" type="number" value="12"></label>
+<label class="small">২য় স্থান<input id="p2" type="number" value="9"></label>
+<label class="small">৩য় স্থান<input id="p3" type="number" value="8"></label>
+<label class="small">৪র্থ স্থান<input id="p4" type="number" value="7"></label>
+<label class="small">৫ম স্থান<input id="p5" type="number" value="6"></label>
+<label class="small">৬ষ্ঠ স্থান<input id="p6" type="number" value="5"></label>
+<label class="small">৭ম স্থান<input id="p7" type="number" value="4"></label>
+<label class="small">৮ম স্থান<input id="p8" type="number" value="3"></label>
+<label class="small">৯ম স্থান<input id="p9" type="number" value="2"></label>
+<label class="small">১০ম স্থান<input id="p10" type="number" value="1"></label>
 </div>
-<button onclick="renderAll()">Apply Settings</button>
 </section>
 
 <section class="card">
-<h2>৪. Screenshot Upload</h2>
-<p class="small">একটি ম্যাচের দুটি স্ক্রিনশট একসঙ্গে দিতে পারবে।</p>
+<h2>৪. Match Result Screenshot</h2>
+<p class="small">একই ম্যাচের দুটি স্ক্রিনশট একসঙ্গে নির্বাচন করো।</p>
 <input id="shots" type="file" accept="image/*" multiple>
-<button onclick="readImages()" id="readBtn">দুটি ছবি পড়ো</button>
-<div id="ocrStatus" class="status"></div>
-<textarea id="ocrText" rows="6" style="width:100%;background:#0b1220;color:white" placeholder="OCR থেকে পড়া লেখা এখানে আসবে"></textarea>
-<p class="small">OCR লেখা পড়ার চেষ্টা করবে। তবে টিম, কিল ও পজিশন নিজে যাচাই করে স্কোর যোগ করতে হবে।</p>
+<button id="scanBtn" onclick="scanImages()">📸 স্ক্রিনশট থেকে পয়েন্ট বের করো</button>
+<div id="status" class="status"></div>
+<p class="small">OCR পাওয়া তথ্য নিচে দেখাবে। নাম ও কিল মিলিয়ে স্কোর যাচাই করো।</p>
+<textarea id="raw" rows="7" style="width:100%;background:#0b1220;color:white" placeholder="OCR result..." ></textarea>
 </section>
 
 <section class="card">
-<h2>৫. Match Score Entry</h2>
+<h2>৫. Automatic Score Review</h2>
 <label class="small">Match Number</label>
-<input id="matchNo" type="number" min="1" value="1">
-
-<div class="grid">
-<div>
-<label class="small">Team</label>
-<select id="scoreTeam"></select>
-</div>
-<div>
-<label class="small">Kills</label>
-<input id="kills" type="number" min="0" value="0">
-</div>
-<div>
-<label class="small">Position</label>
-<input id="position" type="number" min="1" max="25" value="1">
-</div>
-</div>
-
-<button onclick="addScore()">+ Add Score</button>
-
+<input id="matchNo" type="number" value="1" min="1">
 <div class="tablewrap">
 <table>
-<thead><tr><th>Team</th><th>Kills</th><th>Position</th><th>Action</th></tr></thead>
-<tbody id="scoreList"></tbody>
+<thead><tr><th>Team</th><th>Kills</th><th>Position</th><th>Kill Pts</th><th>Place Pts</th><th>Total</th></tr></thead>
+<tbody id="review"></tbody>
 </table>
 </div>
-
-<button onclick="saveMatch()">Save Match</button>
+<button onclick="saveMatch()">Save Match & Update Table</button>
 </section>
 
 <section class="card">
-<h2>৬. Overall Point Table</h2>
+<h2>৬. Overall Standings</h2>
 <div class="tablewrap">
 <table>
-<thead>
-<tr>
-<th>Rank</th><th>Team</th><th>CO</th><th>MP</th><th>PP</th><th>FP</th><th>TP</th>
-</tr>
-</thead>
+<thead><tr><th>Rank</th><th>Team</th><th>CO</th><th>MP</th><th>PP</th><th>FP</th><th>TP</th></tr></thead>
 <tbody id="overall"></tbody>
 </table>
 </div>
@@ -167,338 +113,229 @@ th{color:#ffbd45}
 
 <section class="card">
 <h2>৭. Poster Preview</h2>
-<p class="small">নিচে তোমার নিজের Organization-এর পোস্টার তৈরি হবে।</p>
-<canvas id="poster" width="1100" height="1400" style="display:block;width:100%;height:auto;background:#e8f0d5"></canvas>
-<button onclick="makePoster()">Update Poster</button>
+<canvas id="poster" width="1100" height="1400"></canvas>
+<button onclick="drawPoster()">Update Poster</button>
 <button onclick="downloadPoster()">⬇ Download PNG</button>
-<button class="blue" onclick="window.print()">Print</button>
-<button class="blue" onclick="backup()">Backup Data</button>
-<button class="red" onclick="resetAll()">Delete All Data</button>
+<button class="blue" onclick="backup()">Backup</button>
+<button class="red" onclick="clearData()">Delete All Data</button>
 </section>
-
 </main>
 
 <script>
 const $=id=>document.getElementById(id);
-
-let teams=JSON.parse(localStorage.getItem("ffpm_teams")||"[]");
-let matches=JSON.parse(localStorage.getItem("ffpm_matches")||"[]");
-let currentScores=[];
-let bgImage=null;
+let teams=JSON.parse(localStorage.getItem("ffpmTeams")||"[]");
+let matches=JSON.parse(localStorage.getItem("ffpmMatches")||"[]");
+let review=[];
+let background=null;
 
 function persist(){
-localStorage.setItem("ffpm_teams",JSON.stringify(teams));
-localStorage.setItem("ffpm_matches",JSON.stringify(matches));
+localStorage.setItem("ffpmTeams",JSON.stringify(teams));
+localStorage.setItem("ffpmMatches",JSON.stringify(matches));
 }
-
-function safe(s){
-return String(s).replace(/[&<>"']/g,c=>({
-"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-}[c]));
+function esc(s){
+return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
-
+function norm(s){
+return String(s).toLowerCase().replace(/[^a-z0-9]/g,"");
+}
+function similarity(a,b){
+a=norm(a);b=norm(b);
+if(!a||!b)return 0;
+if(a===b)return 1;
+if(a.includes(b)||b.includes(a))return .8;
+let prev=Array.from({length:b.length+1},(_,i)=>i);
+for(let i=1;i<=a.length;i++){
+let cur=[i];
+for(let j=1;j<=b.length;j++){
+cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+}
+prev=cur;
+}
+return 1-prev[b.length]/Math.max(a.length,b.length);
+}
 function addTeam(){
-let name=$("teamName").value.trim();
-let players=$("players").value.split(",").map(x=>x.trim()).filter(Boolean);
-
-if(!name)return alert("Team Name লিখো");
-if(teams.some(t=>t.name.toLowerCase()===name.toLowerCase()))
-return alert("এই টিম আগে যোগ করা হয়েছে");
-
+let name=$("tn").value.trim();
+let players=$("pn").value.split(",").map(x=>x.trim()).filter(Boolean);
+if(!name)return alert("Team name লিখো");
+if(teams.some(t=>norm(t.name)===norm(name)))return alert("এই টিম আগে আছে");
 teams.push({name,players});
-$("teamName").value="";
-$("players").value="";
-persist();
-renderAll();
+$("tn").value="";$("pn").value="";
+persist();render();
 }
-
 function deleteTeam(i){
-if(!confirm("টিমটি মুছবে?"))return;
-teams.splice(i,1);
-persist();
-renderAll();
+if(!confirm("টিম মুছবে?"))return;
+teams.splice(i,1);persist();render();
 }
-
-function renderTeams(){
+function render(){
 $("teamList").innerHTML=teams.map((t,i)=>
-`${i+1}. ${safe(t.name)} — ${safe(t.players.join(", "))}
-<button class="red" onclick="deleteTeam(${i})">Delete</button>`
-).join("<br>")||"No teams added";
-
-$("scoreTeam").innerHTML=teams.map(t=>
-`<option value="${safe(t.name)}">${safe(t.name)}</option>`
-).join("");
+`${i+1}. ${esc(t.name)} — ${esc(t.players.join(", "))}
+<button class="red" onclick="deleteTeam(${i})">মুছুন</button>`
+).join("<br>")||"কোনো টিম নেই";
+drawReview();drawOverall();drawPoster();
 }
-
-function placePoint(pos){
-let n=Number(pos);
-return n>=1&&n<=10?Number($("p"+n).value||0):0;
+function placePoints(p){
+p=Number(p);
+return p>=1&&p<=10?Number($("p"+p).value||0):0;
 }
-
-function addScore(){
-if(!teams.length)return alert("আগে টিম যোগ করো");
-
-currentScores.push({
-team:$("scoreTeam").value,
-kills:Math.max(0,Number($("kills").value)||0),
-position:Math.max(1,Number($("position").value)||1)
-});
-
-renderScores();
+function drawReview(){
+$("review").innerHTML=review.map((r,i)=>{
+let kp=r.kills*Number($("killPoint").value||0);
+let pp=placePoints(r.position);
+return `<tr>
+<td>${esc(r.team)}</td>
+<td><input type="number" min="0" value="${r.kills}" onchange="review[${i}].kills=Math.max(0,Number(this.value));drawReview()"></td>
+<td><input type="number" min="1" max="25" value="${r.position}" onchange="review[${i}].position=Number(this.value);drawReview()"></td>
+<td>${kp}</td><td>${pp}</td><td><b>${kp+pp}</b></td>
+</tr>`;
+}).join("")||'<tr><td colspan="6">স্ক্রিনশট স্ক্যান করো</td></tr>';
 }
-
-function renderScores(){
-$("scoreList").innerHTML=currentScores.map((s,i)=>`
-<tr>
-<td>${safe(s.team)}</td>
-<td>${s.kills}</td>
-<td>${s.position}</td>
-<td><button class="red" onclick="currentScores.splice(${i},1);renderScores()">X</button></td>
-</tr>`).join("");
+function extractKills(lines){
+let result={};
+for(const team of teams){
+let total=0,found=0;
+for(const player of team.players){
+let best={score:0,line:""};
+for(const line of lines){
+let score=similarity(player,line);
+if(score>best.score)best={score,line};
 }
-
-function saveMatch(){
-if(!currentScores.length)return alert("আগে স্কোর যোগ করো");
-
-let m=Number($("matchNo").value)||1;
-
-if(matches.some(x=>x.match===m)&&!confirm("এই ম্যাচের স্কোর আগে আছে। আবার যোগ করলে ডুপ্লিকেট হতে পারে। চালিয়ে যাবে?"))return;
-
-currentScores.forEach(s=>{
-matches.push({
-match:m,
-team:s.team,
-kills:s.kills,
-position:s.position,
-pp:placePoint(s.position),
-fp:s.kills*Number($("kp").value||0)
-});
-});
-
-currentScores=[];
-persist();
-renderAll();
-alert("Match Saved!");
-}
-
-function getStandings(){
-let data={};
-
-teams.forEach(t=>{
-data[t.name]={
-name:t.name,
-wins:0,
-mp:new Set(),
-pp:0,
-fp:0,
-tp:0
-};
-});
-
-matches.forEach(m=>{
-if(!data[m.team]){
-data[m.team]={name:m.team,wins:0,mp:new Set(),pp:0,fp:0,tp:0};
-}
-
-let d=data[m.team];
-d.mp.add(m.match);
-d.pp+=Number(m.pp);
-d.fp+=Number(m.fp);
-d.tp+=Number(m.pp)+Number(m.fp);
-if(Number(m.position)===1)d.wins++;
-});
-
-return Object.values(data).sort((a,b)=>
-b.tp-a.tp||b.fp-a.fp||b.pp-a.pp
-);
-}
-
-function renderAll(){
-renderTeams();
-renderScores();
-let list=getStandings();
-
-$("overall").innerHTML=list.map((d,i)=>`
-<tr>
-<td>${i+1}</td>
-<td>${safe(d.name)}</td>
-<td>${d.wins}</td>
-<td>${d.mp.size}</td>
-<td>${d.pp}</td>
-<td>${d.fp}</td>
-<td><b>${d.tp}</b></td>
-</tr>`).join("")||'<tr><td colspan="7">No Results</td></tr>';
-
-makePoster();
-}
-
-$("background").addEventListener("change",e=>{
-let f=e.target.files[0];
-if(!f)return;
-let img=new Image();
-img.onload=()=>{
-bgImage=img;
-makePoster();
-};
-img.src=URL.createObjectURL(f);
-});
-
-function rounded(ctx,x,y,w,h,r){
-ctx.beginPath();
-ctx.roundRect(x,y,w,h,r);
-}
-
-function makePoster(){
-let c=$("poster");
-let ctx=c.getContext("2d");
-let w=c.width,h=c.height;
-
-let tableColor=$("tableColor").value;
-let rowColor=$("rowColor").value;
-let textColor=$("textColor").value;
-let titleColor=$("titleColor").value;
-
-ctx.clearRect(0,0,w,h);
-
-if(bgImage){
-ctx.drawImage(bgImage,0,0,w,h);
-}else{
-let g=ctx.createLinearGradient(0,0,w,h);
-g.addColorStop(0,"#a9d9ed");
-g.addColorStop(1,"#f8e7b7");
-ctx.fillStyle=g;
-ctx.fillRect(0,0,w,h);
-
-ctx.fillStyle="rgba(255,255,255,.25)";
-for(let i=0;i<18;i++){
-ctx.beginPath();
-ctx.arc((i*173)%w,(i*97)%h,65,0,Math.PI*2);
-ctx.fill();
+if(best.score>=.55){
+let m=best.line.match(/(\d{1,2})\s*eliminations?/i);
+if(m){total+=Number(m[1]);found++;}
 }
 }
-
-ctx.fillStyle="rgba(0,0,0,.18)";
-ctx.fillRect(0,0,w,h);
-
-ctx.textAlign="center";
-ctx.fillStyle=titleColor;
-ctx.font="bold 34px Arial";
-ctx.fillText($("org").value.toUpperCase(),w/2,85);
-
-ctx.font="bold 64px Arial";
-ctx.fillText($("tournament").value.toUpperCase(),w/2,190);
-
-ctx.font="bold 30px Arial";
-ctx.fillText($("day").value.toUpperCase(),w/2,245);
-
-let x=65,y=315,boxW=970,boxH=990;
-
-ctx.fillStyle=tableColor;
-rounded(ctx,x,y,boxW,boxH,25);
-ctx.fill();
-
-ctx.fillStyle=titleColor;
-ctx.font="bold 38px Arial";
-ctx.fillText("✦ OVERALL STANDINGS ✦",w/2,y+65);
-
-let cols=[
-{label:"RANK",x:110},
-{label:"TEAM NAME",x:390},
-{label:"CO",x:690},
-{label:"MP",x:780},
-{label:"PP",x:865},
-{label:"FP",x:950},
-{label:"TP",x:1020}
-];
-
-ctx.fillStyle=textColor;
-ctx.font="bold 20px Arial";
-cols.forEach(col=>ctx.fillText(col.label,col.x,y+130));
-
-let list=getStandings();
-let maxRows=12;
-let rowY=y+155;
-let rowH=65;
-
-for(let i=0;i<maxRows;i++){
-let yy=rowY+i*75;
-ctx.fillStyle=rowColor;
-rounded(ctx,85,yy,930,rowH,12);
-ctx.fill();
-
-ctx.fillStyle="#183c27";
-ctx.font="bold 23px Arial";
-
-if(list[i]){
-let d=list[i];
-ctx.fillText(String(i+1).padStart(2,"0"),110,yy+41);
-ctx.textAlign="left";
-ctx.fillText(d.name.slice(0,23),255,yy+41);
-ctx.textAlign="center";
-ctx.fillText(d.wins,690,yy+41);
-ctx.fillText(d.mp.size,780,yy+41);
-ctx.fillText(d.pp,865,yy+41);
-ctx.fillText(d.fp,950,yy+41);
-ctx.fillText(d.tp,1020,yy+41);
-}else{
-ctx.fillText(String(i+1).padStart(2,"0"),110,yy+41);
+result[team.name]={kills:total,found};
 }
+return result;
 }
-
-ctx.fillStyle=titleColor;
-ctx.font="bold 28px Arial";
-ctx.fillText("FREE FIRE TOURNAMENT",w/2,1355);
-}
-
-function downloadPoster(){
-makePoster();
-let a=document.createElement("a");
-a.download="FF-POINT-MASTER-POSTER.png";
-a.href=$("poster").toDataURL("image/png");
-a.click();
-}
-
-async function readImages(){
+async function scanImages(){
 let files=[...$("shots").files].slice(0,2);
 if(files.length!==2)return alert("দুটি স্ক্রিনশট নির্বাচন করো");
-if(typeof Tesseract==="undefined")return alert("OCR লাইব্রেরি লোড হয়নি");
-
-$("readBtn").disabled=true;
-let text="";
-
+if(!teams.length)return alert("আগে টিম রেজিস্ট্রেশন করো");
+if(!window.Tesseract)return alert("OCR লাইব্রেরি লোড হয়নি। ইন্টারনেট চালু করো।");
+$("scanBtn").disabled=true;
+let allLines=[];
+let full="";
 try{
 for(let i=0;i<files.length;i++){
-$("ocrStatus").textContent="ছবি "+(i+1)+" পড়া হচ্ছে...";
-let result=await Tesseract.recognize(files[i],"eng");
-text+="\n--- SCREENSHOT "+(i+1)+" ---\n"+result.data.text;
+$("status").textContent=`ছবি ${i+1} পড়া হচ্ছে...`;
+let result=await Tesseract.recognize(files[i],"eng",{
+logger:m=>{
+if(m.status)$("status").textContent=`ছবি ${i+1}: ${m.status} ${Math.round((m.progress||0)*100)}%`;
 }
-$("ocrText").value=text;
-$("ocrStatus").textContent="দুই ছবির লেখা পড়া শেষ। যাচাই করে স্কোর যোগ করো।";
+});
+full+=`\n--- IMAGE ${i+1} ---\n`+result.data.text;
+allLines.push(...result.data.text.split(/\n/).map(x=>x.trim()).filter(Boolean));
+}
+$("raw").value=full;
+let extracted=extractKills(allLines);
+review=teams.map((t,i)=>({
+team:t.name,
+kills:extracted[t.name].kills,
+position:i+1,
+found:extracted[t.name].found
+}));
+$("status").textContent="OCR শেষ। কিলের তথ্য যাচাই করো। পজিশনও ছবির সঙ্গে মিলিয়ে ঠিক করো।";
+drawReview();
 }catch(e){
-$("ocrStatus").textContent="ছবি পড়তে সমস্যা হয়েছে।";
+$("status").textContent="স্ক্যান করতে সমস্যা হয়েছে। আবার চেষ্টা করো।";
 }
-$("readBtn").disabled=false;
+$("scanBtn").disabled=false;
 }
-
-function backup(){
-let blob=new Blob([JSON.stringify({teams,matches},null,2)],{type:"application/json"});
+function saveMatch(){
+if(!review.length)return alert("আগে স্ক্রিনশট স্ক্যান করো");
+let match=Number($("matchNo").value)||1;
+if(matches.some(m=>m.match===match)&&!confirm("এই ম্যাচ আগে সেভ করা হয়েছে। আবার যোগ করবে?"))return;
+review.forEach(r=>{
+matches.push({
+match,team:r.team,kills:Number(r.kills)||0,
+position:Number(r.position)||1,
+pp:placePoints(r.position),
+fp:(Number(r.kills)||0)*Number($("killPoint").value||0)
+});
+});
+persist();review=[];render();
+alert("ম্যাচ সেভ হয়েছে!");
+}
+function standings(){
+let data={};
+teams.forEach(t=>data[t.name]={name:t.name,co:0,mp:new Set(),pp:0,fp:0,tp:0});
+matches.forEach(m=>{
+if(!data[m.team])data[m.team]={name:m.team,co:0,mp:new Set(),pp:0,fp:0,tp:0};
+let d=data[m.team];d.mp.add(m.match);
+d.pp+=m.pp;d.fp+=m.fp;d.tp+=m.pp+m.fp;
+if(m.position===1)d.co++;
+});
+return Object.values(data).sort((a,b)=>b.tp-a.tp||b.fp-a.fp||b.pp-a.pp);
+}
+function drawOverall(){
+$("overall").innerHTML=standings().map((d,i)=>`
+<tr><td>${i+1}</td><td>${esc(d.name)}</td><td>${d.co}</td>
+<td>${d.mp.size}</td><td>${d.pp}</td><td>${d.fp}</td><td><b>${d.tp}</b></td></tr>
+`).join("")||'<tr><td colspan="7">কোনো ফলাফল নেই</td></tr>';
+}
+$("bg").addEventListener("change",e=>{
+let f=e.target.files[0];if(!f)return;
+let img=new Image();
+img.onload=()=>{background=img;drawPoster();};
+img.src=URL.createObjectURL(f);
+});
+function drawPoster(){
+let c=$("poster"),ctx=c.getContext("2d");
+let w=c.width,h=c.height;
+ctx.clearRect(0,0,w,h);
+if(background)ctx.drawImage(background,0,0,w,h);
+else{
+let g=ctx.createLinearGradient(0,0,w,h);
+g.addColorStop(0,"#a8d9ef");g.addColorStop(1,"#f6e5ba");
+ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+}
+ctx.fillStyle="rgba(0,0,0,.22)";ctx.fillRect(0,0,w,h);
+ctx.textAlign="center";
+ctx.fillStyle=$("hc").value;
+ctx.font="bold 32px Arial";ctx.fillText($("org").value.toUpperCase(),w/2,85);
+ctx.font="bold 58px Arial";ctx.fillText($("event").value.toUpperCase(),w/2,175);
+ctx.font="bold 28px Arial";ctx.fillText($("day").value.toUpperCase(),w/2,225);
+ctx.fillStyle=$("tc").value;ctx.fillRect(55,275,990,1040);
+ctx.fillStyle=$("hc").value;ctx.font="bold 36px Arial";
+ctx.fillText("✦ OVERALL STANDINGS ✦",w/2,335);
+let headers=["RANK","TEAM NAME","CO","MP","PP","FP","TP"];
+let xs=[105,390,700,790,875,960,1030];
+ctx.font="bold 20px Arial";ctx.fillStyle="white";
+headers.forEach((v,i)=>ctx.fillText(v,xs[i],390));
+let list=standings();
+for(let i=0;i<12;i++){
+let y=415+i*73;
+ctx.fillStyle=$("rc").value;ctx.fillRect(75,y,950,62);
+ctx.fillStyle=$("fc").value;ctx.font="bold 22px Arial";
+let d=list[i];
+ctx.textAlign="center";ctx.fillText(String(i+1).padStart(2,"0"),105,y+39);
+if(d){
+ctx.textAlign="left";ctx.fillText(d.name.slice(0,24),250,y+39);
+ctx.textAlign="center";
+[ d.co,d.mp.size,d.pp,d.fp,d.tp ].forEach((v,j)=>ctx.fillText(v,xs[j+2],y+39));
+}
+}
+ctx.textAlign="center";ctx.fillStyle=$("hc").value;
+ctx.font="bold 26px Arial";ctx.fillText("FREE FIRE TOURNAMENT",w/2,1370);
+}
+function downloadPoster(){
+drawPoster();
 let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="FF-POINT-MASTER-BACKUP.json";
-a.click();
+a.download="FF-POINT-MASTER.png";
+a.href=$("poster").toDataURL("image/png");a.click();
+}
+function backup(){
+let b=new Blob([JSON.stringify({teams,matches},null,2)],{type:"application/json"});
+let a=document.createElement("a");a.href=URL.createObjectURL(b);
+a.download="FF-POINT-MASTER-BACKUP.json";a.click();
 URL.revokeObjectURL(a.href);
 }
-
-function resetAll(){
-if(!confirm("সব ডেটা মুছে ফেলবে?"))return;
-teams=[];
-matches=[];
-currentScores=[];
-persist();
-renderAll();
+function clearData(){
+if(!confirm("সব ডেটা মুছবে?"))return;
+teams=[];matches=[];review=[];persist();render();
 }
-
-renderAll();
+render();
 </script>
 </body>
 </html>
